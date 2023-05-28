@@ -1,0 +1,27 @@
+body {
+  font-family: "Roboto", sans-serif;
+  color: #333;
+}
+
+h1 {
+  font-weight: 300;
+  margin-bottom: 2rem;
+}
+
+.v-btn {
+  font-weight: 500;
+}
+
+.v-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.v-card img {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.v-footer {
+  font-weight: 300;
+}
