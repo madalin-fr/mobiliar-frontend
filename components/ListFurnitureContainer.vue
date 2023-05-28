@@ -31,7 +31,6 @@ export default {
     try {
       const response = await this.$axios.get('/api/furniture');
       this.furnitureList = response.data;
-      console.log(response.data);
     } catch (error) {
       console.error('Error fetching furniture data:', error);
     }
