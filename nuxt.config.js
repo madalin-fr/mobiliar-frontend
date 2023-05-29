@@ -54,7 +54,8 @@ export default {
 
   proxy: {
     '/api': {
-      target: 'https://mobiliar-backend.up.railway.app/', // Change this to your Spring Boot server URL
+      target: 'http://localhost:8080', // Change this to your Spring Boot server URL
+      // target: 'https://mobiliar-backend.up.railway.app/', // Change this to your Spring Boot server URL
       changeOrigin: true,
     },
   },
