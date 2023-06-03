@@ -1,8 +1,5 @@
 <template>
   <v-app>
-    <v-navigation-drawer app>
-      <!-- Your navigation items here -->
-    </v-navigation-drawer>
 
     <v-app-bar app>
       <v-toolbar-title>Furniture Store</v-toolbar-title>

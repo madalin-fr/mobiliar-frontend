@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ListFurnitureContainer from '@/components/ListFurnitureContainer.vue'
+import ListFurnitureContainer from '@/components/ContainerListFurniture.vue'
 
 export default {
   components: {

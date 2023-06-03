@@ -1,11 +1,9 @@
 <template>
-  <div>
-    <FurnitureDetailsContainer :furnitureItem="furnitureItem" />
-  </div>
+    <FurnitureDetailsContainer class="container" :furnitureItem="furnitureItem" />
 </template>
 
 <script>
-import FurnitureDetailsContainer from '@/components/FurnitureDetailsContainer.vue';
+import FurnitureDetailsContainer from '@/components/ContainerFurnitureDetails.vue';
 
 export default {
   components: {
@@ -17,3 +15,11 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+</style>

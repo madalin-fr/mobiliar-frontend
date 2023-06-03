@@ -1,35 +1,21 @@
 <template>
-  <div>
-    <div id="customEnvironment">
+    <div id="customEnvironment" ref="customEnvironmentRef" class="justify-centers">
       <button @click="increaseScale">+</button>
       <button @click="decreaseScale">-</button>
     </div>
-  </div>
 </template>
 
 <style scoped>
 #customEnvironment {
-  width: 100%;
+  width: 80%;
   height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 </style>
 
 
-
 <script>
-import FurnitureAR from './FurnitureAR.vue';
-import FurnitureInfo from './FurnitureInfo.vue';
-import FurnitureViewToggle from './FurnitureViewToggle.vue';
 
 export default {
-  components: {
-    FurnitureAR,
-    FurnitureInfo,
-    FurnitureViewToggle,
-  },
   props: {
     furnitureItem: {
       type: Object,
@@ -44,14 +30,31 @@ export default {
       THREE: null,
     };
   },
+  created() {
+    if (process.client) {
+      window.addEventListener('resize', this.updateCustomEnvironmentPadding);
+    }
+  },
   async mounted() {
     if (process.client) {
       this.THREE = window.AFRAME.THREE;
       this.modelType = this.furnitureItem.modelType;
       await this.initCustomEnvironment();
     }
+    this.updateCustomEnvironmentPadding();
+  },
+  beforeUnmount() {
+    if (process.client) {
+      window.removeEventListener('resize', this.updateCustomEnvironmentPadding);
+    }
   },
   methods: {
+    updateCustomEnvironmentPadding() {
+      const container = this.$refs.customEnvironmentRef;
+      const width = container.clientWidth;
+      const height = width * (9/16);
+      container.style.paddingBottom = `${height}px`;
+    },
     toggleAR() {
       this.showAR = !this.showAR;
       this.$nextTick(() => {
@@ -62,7 +65,7 @@ export default {
     },
     async getFurnitureFileUrl(id, fileName) {
       try {
-        const response = await this.$axios.get(`/api/furniture/${id}/${fileName}`, { responseType: 'blob' });
+        const response = await this.$axios.get(`/api/furniture/${id}/${fileName}`, {responseType: 'blob'});
         return URL.createObjectURL(response.data);
       } catch (error) {
         console.error('Error fetching furniture file:', error);
@@ -98,11 +101,10 @@ export default {
       container.appendChild(renderer.domElement);
 
 
-
       try {
         if (this.modelType === 'gltf' || this.modelType === 'glb') {
           const loader = new GLTFLoader();
-          console.log(this.furnitureItem.id,this.furnitureItem.modelName);
+          console.log(this.furnitureItem.id, this.furnitureItem.modelName);
 
           const url = await this.getFurnitureFileUrl(this.furnitureItem.id, this.furnitureItem.modelName);
 
@@ -139,7 +141,8 @@ export default {
           }, undefined, (error) => {
             console.error('Error loading GLTF model:', error);
           });
-        } else if (this.modelType === 'obj') {
+        }
+        else if (this.modelType === 'obj') {
           const loader = new OBJLoader();
           const objUrl = await this.getFurnitureFileUrl(this.furnitureItem.id, this.furnitureItem.modelName);
           const mtlUrl = await this.getFurnitureFileUrl(this.furnitureItem.id, this.furnitureItem.materialName);
@@ -177,13 +180,11 @@ export default {
             console.error('Error loading MTL:', error);
           });
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Error loading furniture model:', error);
       }
 
       // Add a background with a blurred environment
-
       textureLoader.load('/environment-background.jpg', (background) => {
         scene.background = background;
       });

@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import CreateFurnitureFormContainer from '@/components/CreateFurnitureFormContainer.vue'
+import CreateFurnitureFormContainer from '@/components/ContainerCreateFurnitureForm.vue'
 
 export default {
   components: {
