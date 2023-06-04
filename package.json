@@ -21,6 +21,7 @@
     "multer-s3": "^2.9.0",
     "nuxt": "^2.15.8",
     "obj-file-parser": "^0.5.0",
+    "postprocessing": "^6.31.0",
     "three": "^0.152.2",
     "three-gltf-loader": "^1.111.0",
     "three-obj-loader": "^1.1.3",
