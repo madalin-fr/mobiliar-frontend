@@ -31,7 +31,8 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     { src: '~/plugins/aframe-ar.js', mode: 'client' },
-    { src: '~/plugins/threejs-plugin.js', mode: 'client' },
+    { src: '~/plugins/maz-ui.js', mode: 'client' },
+
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -47,16 +48,18 @@ export default {
   modules: [
     '@nuxtjs/axios',
     '@nuxtjs/proxy',
+    ['cookie-universal-nuxt', { alias: 'cookies' }],
   ],
 
   axios: {
     proxy: true,
   },
 
+
   proxy: {
     '/api': {
-      target: 'http://localhost:8080', // Change this to your Spring Boot server URL
-      // target: 'https://mobiliar-backend.up.railway.app/', // Change this to your Spring Boot server URL
+      // target: 'http://localhost:8080', // Change this to your Spring Boot server URL
+      target: 'https://mobiliar-backend.up.railway.app/', // Change this to your Spring Boot server URL
       changeOrigin: true,
     },
   },
@@ -82,5 +85,15 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+    babel: {
+      plugins: [
+        [
+          'component', {
+          libraryName: 'maz-ui',
+          styleLibraryName: 'css'
+        }
+        ]
+      ]
+    }
   }
 }

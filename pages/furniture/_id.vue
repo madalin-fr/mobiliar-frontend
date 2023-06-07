@@ -1,13 +1,13 @@
 <template>
-    <FurnitureDetailsContainer class="container" :furnitureItem="furnitureItem" />
+    <ContainerFurnitureDetails class="container" :furnitureItem="furnitureItem" />
 </template>
 
 <script>
-import FurnitureDetailsContainer from '@/components/ContainerFurnitureDetails.vue';
+import ContainerFurnitureDetails from '@/components/ContainerFurnitureDetails.vue';
 
 export default {
   components: {
-    FurnitureDetailsContainer,
+    ContainerFurnitureDetails,
   },
   async asyncData({ $axios, params }) {
     const furnitureItem = await $axios.$get(`/api/furniture/${params.id}`);
