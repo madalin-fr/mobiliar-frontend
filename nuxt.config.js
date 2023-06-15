@@ -18,8 +18,9 @@ export default {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ],
     script: [
-      { src: 'https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/examples/vendor/aframe/build/aframe.min.js', mode: 'client' },
-      { src: 'https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/build/aframe-ar.js', mode: 'client' },
+      { src: 'https://aframe.io/releases/1.4.2/aframe.min.js', mode: 'client' },
+      // we import arjs version without NFT but with marker + location based support
+      { src: 'https://raw.githack.com/AR-js-org/AR.js/dev/aframe/build/aframe-ar.js', mode: 'client' },
     ],
   },
 
