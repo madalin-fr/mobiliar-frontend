@@ -1,15 +1,24 @@
 <template>
-  <div>
-    <CreateFurnitureFormContainer />
-  </div>
+  <v-container>
+    <v-row>
+      <v-col cols="12" md="6" sm="8">
+        <v-card>
+          <v-card-title>
+            Add New Furniture Product
+          </v-card-title>
+          <v-card-text>
+          <CreateFurnitureForm />
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
-
 <script>
-import CreateFurnitureFormContainer from '@/components/ContainerCreateFurnitureForm.vue'
-
+import CreateFurnitureForm from '@/components/CreateFurnitureForm.vue'
 export default {
   components: {
-    CreateFurnitureFormContainer,
+    CreateFurnitureForm: CreateFurnitureForm,
   },
 }
 </script>

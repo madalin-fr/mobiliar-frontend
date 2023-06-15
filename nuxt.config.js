@@ -18,8 +18,8 @@ export default {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ],
     script: [
-      { src: 'https://aframe.io/releases/1.2.0/aframe.min.js', mode: 'client' },
-      { src: 'https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js', mode: 'client' },
+      { src: 'https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/examples/vendor/aframe/build/aframe.min.js', mode: 'client' },
+      { src: 'https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/build/aframe-ar.js', mode: 'client' },
     ],
   },
 
@@ -30,9 +30,9 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    { src: '~/plugins/aframe-ar.js', mode: 'client' },
+    { src: '~/plugins/aframe-arjs.js', mode: 'client' },
     { src: '~/plugins/maz-ui.js', mode: 'client' },
-
+    { src: '~/plugins/swiper.js', mode: 'client' },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -58,8 +58,8 @@ export default {
 
   proxy: {
     '/api': {
-      // target: 'http://localhost:8080', // Change this to your Spring Boot server URL
-      target: 'https://mobiliar-backend.up.railway.app/', // Change this to your Spring Boot server URL
+      target: 'http://localhost:8080', // Change this to your Spring Boot server URL
+      // target: 'https://mobiliar-backend.up.railway.app/', // Change this to your Spring Boot server URL
       changeOrigin: true,
     },
   },

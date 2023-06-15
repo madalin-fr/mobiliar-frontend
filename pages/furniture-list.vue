@@ -1,15 +1,11 @@
 <template>
-  <div>
-    <ListFurnitureContainer />
-  </div>
+    <FurnitureList />
 </template>
-
 <script>
-import ListFurnitureContainer from '@/components/ContainerListFurniture.vue'
-
+import FurnitureList from '@/components/FurnitureList.vue'
 export default {
   components: {
-    ListFurnitureContainer,
+    FurnitureList,
   },
 }
 </script>

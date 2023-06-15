@@ -1,16 +1,24 @@
 <template>
-  <div id="customEnvironment" ref="customEnvironmentRef" >
+  <div id="customEnvironment" ref="customEnvironmentRef">
     <div class="hud-controls">
-      <button class="hud-button zoom-in" @click="zoomIn" title="Zoom In">+</button>
-      <button class="hud-button zoom-out" @click="zoomOut" title="Zoom Out">-</button>
+      <v-btn icon @click="zoomIn">
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
+      <v-btn icon @click="zoomOut">
+        <v-icon>mdi-minus</v-icon>
+      </v-btn>
+      <v-btn icon @click="togglePauseRotation">
+        <v-icon>mdi-pause</v-icon>
+      </v-btn>
+
     </div>
     <div v-if="model" class="textures-container">
       <button @click="toggleTextureMenu">Toggle Textures</button>
-      <transition name="fade">
+      <transition-group name="fade">
         <div
-          v-show="showTexturesMenuFlag"
           v-for="textureName in furnitureItem.textureNames"
           :key="textureName"
+          v-if="model && showTexturesMenuFlag"
           class="texture-item"
         >
           <input
@@ -22,10 +30,11 @@
           />
           <label :for="textureName">{{ textureName }}</label>
         </div>
-      </transition>
+      </transition-group>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 #customEnvironment {
@@ -48,7 +57,6 @@
   left: 10px;
   z-index: 1;
 }
-
 .hud-button {
   background-color: #333;
   color: #fff;
@@ -66,7 +74,6 @@
 </style>
 
 <script>
-
 export default {
   props: {
     furnitureItem: {
@@ -76,7 +83,6 @@ export default {
   },
   data() {
     return {
-      blobCache: {},
       showAR: false,
       renderer: null,
       modelType: '',
@@ -84,12 +90,11 @@ export default {
       cameraStartPosition: 4,
       THREE: null,
       scene:null,
-      composer:null,
-      blurAmount: 0,
       modelWrapper: null,
       model: null,
       activeTextures: {},
-      showTexturesMenuFlag: true,
+      showTexturesMenuFlag: false,
+      paused: false
     };
   },
   created() {
@@ -115,6 +120,9 @@ export default {
     }
   },
   methods: {
+    togglePauseRotation() {
+      this.paused = !this.paused
+    },
     toggleTextureMenu() {
       this.showTexturesMenuFlag = !this.showTexturesMenuFlag;
     },
@@ -142,14 +150,7 @@ export default {
         renderer.setSize(container.clientWidth, container.clientHeight);
       }
     },
-    toggleAR() {
-      this.showAR = !this.showAR;
-      this.$nextTick(() => {
-        if (!this.showAR) {
-          this.initCustomEnvironment();
-        }
-      });
-    },
+
     async toggleTexture(textureName) {
       if (!this.modelWrapper) return;
       this.activeTextures[textureName] = !this.activeTextures[textureName];
@@ -222,6 +223,60 @@ export default {
       scene.add(directionalLight);
     },
 
+
+    async initCustomEnvironment() {
+      const THREE = this.THREE;
+      const OBJLoader = THREE.OBJLoader;
+      // const GLTFLoader = THREE.GLTFLoader;
+      const MTLLoader = THREE.MTLLoader;
+      const textureLoader = new THREE.TextureLoader();
+      const container = document.getElementById('customEnvironment');
+      if (!container) return;
+
+      const scene = new THREE.Scene();
+      this.scene = scene; // assign scene to data property
+
+      const camera = new THREE.PerspectiveCamera(
+        90, // field of view in degrees
+        container.clientWidth / container.clientHeight, // aspect ratio
+        0.1, // near clipping plane
+        50// far clipping plane
+      );
+      camera.name = 'camera';
+      camera.position.set(0, 0, this.cameraStartPosition); // Adjust the camera position to fit your scene
+      scene.add(camera);
+
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(renderer.domElement);
+      this.renderer = renderer;
+
+      const modelWrapper = new this.THREE.Object3D();
+      scene.add(modelWrapper);
+      this.modelWrapper = modelWrapper;
+
+      this.addLights(scene);
+
+      await this.loadModel(OBJLoader,MTLLoader);
+
+      // Center the camera on the model
+      if (this.modelSize) {
+        this.updateCameraPosition(this.modelSize);
+      }
+
+      const animate = () => {
+        requestAnimationFrame(animate);
+        if (!this.paused && modelWrapper) {
+          modelWrapper.rotation.y += Math.PI / 120;
+        }
+        renderer.render(scene, camera);
+      };
+
+      await this.loadBackgroundTexture(textureLoader);
+
+      animate();
+    },
+
     centerModel(model) {
       const box = new this.THREE.Box3().setFromObject(model);
       const center = box.getCenter(new this.THREE.Vector3());
@@ -232,6 +287,28 @@ export default {
       model.position.z += (model.position.z - center.z);
 
       return { center, size };
+    },
+
+    updateCameraPosition(modelSize) {
+      const container = document.getElementById('customEnvironment');
+      const camera = this.scene.getObjectByName('camera');
+      if (!container || !camera || !modelSize) return;
+
+      const aspectRatio = container.clientWidth / container.clientHeight;
+      const fovRadians = camera.fov * (Math.PI / 180);
+      const distanceWidth = Math.abs(modelSize.x / 2) / Math.tan(fovRadians / 2);
+      const distanceHeight = Math.abs(modelSize.y / 2) / Math.tan(fovRadians / 2) / aspectRatio;
+
+      // Add padding to the distance
+      const padding = 1.2;
+      const distanceWidthWithPadding = distanceWidth * padding;
+      const distanceHeightWithPadding = distanceHeight * padding;
+
+      // Choose the larger distance to fit the entire model in the view
+      const distance = Math.max(distanceWidthWithPadding, distanceHeightWithPadding);
+
+      // Update camera position
+      camera.position.z = distance;
     },
 
     async loadBackgroundTexture(textureLoader) {
@@ -251,7 +328,6 @@ export default {
         const blobName = pathname.substring(pathname.lastIndexOf('/') + 1); // Extract the blobName from the URL
         textureMap[textureName] = blobName;
       }
-
       return textureMap;
     },
     async loadModel(OBJLoader, MTLLoader) {
@@ -308,76 +384,8 @@ export default {
       });
     },
 
-    updateCameraPosition(modelSize) {
-      const container = document.getElementById('customEnvironment');
-      const camera = this.scene.getObjectByName('camera');
-      if (!container || !camera || !modelSize) return;
-
-      const aspectRatio = container.clientWidth / container.clientHeight;
-      const fovRadians = camera.fov * (Math.PI / 180);
-      const distanceWidth = Math.abs(modelSize.x / 2) / Math.tan(fovRadians / 2);
-      const distanceHeight = Math.abs(modelSize.y / 2) / Math.tan(fovRadians / 2) / aspectRatio;
-
-      // Choose the larger distance to fit the entire model in the view
-      const distance = Math.max(distanceWidth, distanceHeight);
-
-      // Update camera position
-      camera.position.z = distance;
-    },
-
-    async initCustomEnvironment() {
-      const THREE = this.THREE;
-      const OBJLoader = THREE.OBJLoader;
-      // const GLTFLoader = THREE.GLTFLoader;
-      const MTLLoader = THREE.MTLLoader;
-      const textureLoader = new THREE.TextureLoader();
-      const container = document.getElementById('customEnvironment');
-      if (!container) return;
-
-      const scene = new THREE.Scene();
-      this.scene = scene; // assign scene to data property
-
-      const camera = new THREE.PerspectiveCamera(
-        90, // field of view in degrees
-        container.clientWidth / container.clientHeight, // aspect ratio
-        0.1, // near clipping plane
-        50// far clipping plane
-      );
-      camera.name = 'camera';
-      camera.position.set(0, 0, this.cameraStartPosition); // Adjust the camera position to fit your scene
-      scene.add(camera);
-
-      const renderer = new THREE.WebGLRenderer();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      container.appendChild(renderer.domElement);
-      this.renderer = renderer;
-
-      const modelWrapper = new this.THREE.Object3D();
-      scene.add(modelWrapper);
-      this.modelWrapper = modelWrapper;
-
-      this.addLights(scene);
-
-      await this.loadModel(OBJLoader,MTLLoader);
-
-      // Center the camera on the model
-      if (this.modelSize) {
-        this.updateCameraPosition(this.modelSize);
-      }
 
 
-      await this.loadBackgroundTexture(textureLoader);
-
-      const animate = () => {
-        requestAnimationFrame(animate);
-        if (modelWrapper) {
-          modelWrapper.rotation.y += Math.PI / 120;
-        }
-        renderer.render(scene, camera);
-      };
-
-      animate();
-    },
   },
 };
 </script>
