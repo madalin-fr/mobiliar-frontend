@@ -30,8 +30,8 @@ export default {
       { src: 'https://aframe.io/releases/1.4.2/aframe.min.js', mode: 'client' },
       // we import arjs version without NFT but with marker + location based support
       { src: 'https://raw.githack.com/AR-js-org/AR.js/dev/aframe/build/aframe-ar.js', mode: 'client' },
-      { src: 'js/gesture-detector.js', mode: 'client' },
-      { src: 'js/gesture-handler.js', mode: 'client' }
+      { src: '/js/gesture-detector.js', mode: 'client' },
+      { src: '/js/gesture-handler.js', mode: 'client' }
     ]
   },
 
