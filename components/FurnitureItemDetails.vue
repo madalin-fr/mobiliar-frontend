@@ -1,31 +1,46 @@
 <template>
   <v-container fluid>
     <v-row>
-      <v-col cols="9">
-        <div>
-          <h1>{{ furnitureItem.name }}</h1>
-          <p>{{ furnitureItem.description }}</p>
-          <p>Price: ${{ furnitureItem.price }}</p>
-        </div>
+      <v-col cols="12" md="6" class="d-flex flex-column">
+        <v-btn @click="startAR" class="mb-6" style="align-self: start">
+          <v-icon>{{ 'mdi-play' }}</v-icon>
+          {{ 'Start AR' }}
+        </v-btn>
+        <v-card class="mb-4">
+          <v-card-title>
+            <h1 class="display-1">{{ furnitureItem.name }}</h1>
+          </v-card-title>
+          <v-card-text>
+            <p class="subtitle-1 mb-4">{{ furnitureItem.description }}</p>
+          </v-card-text>
+        </v-card>
+        <v-card class="mb-4">
+          <v-card-title>Details</v-card-title>
+          <v-card-text>
+            <p>Price: ${{ furnitureItem.price }}</p>
+            <p>Created at: {{ furnitureItem.createdAt }}</p>
+          </v-card-text>
+        </v-card>
+        <v-card>
+          <v-card-title>Seller Information</v-card-title>
+          <v-card-text>
+            <p>Seller: {{ furnitureItem.customerName }}</p>
+            <p>Email: {{ furnitureItem.customerEmail }}</p>
+            <p>Phone: {{ furnitureItem.customerPhoneNumber }}</p>
+            <p>Address: {{ furnitureItem.customerAddress1 }}, {{ furnitureItem.customerAddress2 }}</p>
+            <v-btn v-if="isOwner()" @click="deleteFurnitureItem" color="red" dark>Delete Furniture</v-btn>
+          </v-card-text>
+        </v-card>
       </v-col>
-      <v-col cols="3">
-        <v-container>
-          <v-row>
-            <v-btn>
-              <v-icon>{{'mdi-play'}}</v-icon>
-              {{'Start AR'}}
-            </v-btn>
-          </v-row>
-        </v-container>
-        <v-responsive :aspect-ratio="9 / 16">
-          <v-card
-            class="d-flex align-center justify-center"
-            outlined
-            :style="{height:'80vh'}"
-          >
-            <Furniture3DScene :texture-blob-urls="textureBlobUrls" :furniture-item="furnitureItem" />
-          </v-card>
-        </v-responsive>
+      <v-col cols="12" md="6" class="d-flex flex-column">
+        <div>
+          <v-responsive :aspect-ratio="9 / 16">
+            <v-card class="fill-height d-flex align-center justify-center" outlined>
+              <Furniture3DScene :texture-blob-urls="textureBlobUrls" :mtl-url="String(mtlUrl)" :model-url="String(modelUrl)" :furniture-item="furnitureItem" v-if="!loading" />
+              <v-progress-circular indeterminate color="primary" v-if="loading"></v-progress-circular>
+            </v-card>
+          </v-responsive>
+        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -40,83 +55,48 @@ export default {
     FurnitureARScene,
     Furniture3DScene,
   },
+  mounted() {
+    console.log(this.furnitureItem);
+  },
   props: {
-    furnitureItem: Object,
-  },
-  data() {
-    return {
-      textureBlobUrls: {},
-    };
-  },
-  async mounted() {
-    this.textureBlobUrls = await this.loadTextures(this.furnitureItem);
+    textureBlobUrls: {
+      type: Object,
+      required: true,
+    },
+    mtlUrl: {
+      type: String,
+      default: "",
+    },
+    modelUrl: {
+      type: String,
+      required: true,
+    },
+    furnitureItem: {
+      type: Object,
+      required: true,
+    },
+    loading: {
+      type: Boolean,
+      default: true,
+    },
   },
   methods: {
-    async getFurnitureFileUrl(id, fileName) {
-
-      const resourceUrl = `/api/furniture/${id}/${fileName}`;
-
-      // Open the cache
-      const cache = await caches.open('furniture-cache').catch((error) => {
-        console.error('Error opening the cache:', error);
-      });
-
-      if (cache) {
-        // Check if the resource is in the cache
-        const cacheMatch = await cache.match(resourceUrl).catch((error) => {
-          console.error('Error matching the cache:', error);
-        });
-
-        // If the resource is in the cache, return it
-        if (cacheMatch) {
-          const cachedBlob = await cacheMatch.blob();
-          // Create a blob URL for the cached resource
-          return URL.createObjectURL(cachedBlob);
-        }
-      }
-
-      // If the resource is not in the cache, fetch it
-      try {
-        const response = await this.$axios.get(resourceUrl, { responseType: 'blob' });
-        // Create a blob URL for the fetched resource
-        const blobUrl = URL.createObjectURL(response.data);
-
-        // Add the fetched resource to the cache if available
-        if (cache) {
-          // Create a new Response object with the same data as the original response
-          const cacheableResponse = new Response(response.data, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: response.headers,
-          });
-
-          // Add the Response object to the cache
-          // The resourceUrl is used as the cache key
-          await cache.put(resourceUrl, cacheableResponse).catch((error) => {
-            console.error('Error adding the resource to the cache:', error);
-          });
-        }
-
-        return blobUrl;
-      } catch (error) {
-        console.error('Error fetching furniture file:', error);
-        return '';
-      }
+    startAR() {
+      this.$emit("start-ar");
     },
-    async loadTextures(furnitureItem) {
-      const { textureNames, id: furnitureItemId } = furnitureItem;
-      const textureBlobUrls = {};
-      for (const textureName of textureNames) {
-        // Get the blob URL for the texture
-        const blobUrl = await this.getFurnitureFileUrl(furnitureItemId, textureName);
-        const blobUrlObj = new URL(blobUrl);
-        const pathname = blobUrlObj.pathname;
-        // Extract the blobName from the URL
-        textureBlobUrls[textureName] = pathname.substring(pathname.lastIndexOf('/') + 1);
-      }
-      return textureBlobUrls;
+    isOwner() {
+      return this.furnitureItem.customerEmail === this.$auth.user.email;
+    },
+    deleteFurnitureItem() {
+      const url = `/api/furniture/${this.furnitureItem.id}`;
+      axios.delete(url)
+        .then(response => {
+          console.log('Furniture item deleted successfully:', response.data);
+          })
+        .catch(error => {
+          console.error('Error deleting furniture item:', error.response.data);
+          });
     },
   },
 };
 </script>
-

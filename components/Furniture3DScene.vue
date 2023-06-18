@@ -7,6 +7,12 @@
       <v-btn icon @click="zoomOut">
         <v-icon>mdi-minus</v-icon>
       </v-btn>
+      <v-btn icon @click="rotateModelX(2)">
+        <v-icon>mdi-rotate-right</v-icon>
+      </v-btn>
+      <v-btn icon @click="rotateModelX(-2)">
+        <v-icon>mdi-rotate-left</v-icon>
+      </v-btn>
       <v-btn icon @click="togglePauseRotation">
         <v-icon>mdi-pause</v-icon>
       </v-btn>
@@ -45,7 +51,8 @@
 .hud-controls {
   position: absolute;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  max-width: 200px;
   justify-content: space-between;
   top: 10px;
   right: 10px;
@@ -74,10 +81,20 @@
 </style>
 
 <script>
+import {getFurnitureFileAsBlobUrl} from "assets/furniture-utils";
+
 export default {
   props: {
     textureBlobUrls: {
       type: Object,
+      required: true,
+    },
+    mtlUrl: {
+      type: String,
+      default: '',
+    },
+    modelUrl: {
+      type: String,
       required: true,
     },
     furnitureItem: {
@@ -100,31 +117,60 @@ export default {
       paused: false
     };
   },
-  created() {
-    if (process.client) {
-      window.addEventListener('resize', this.updateRendererWhenResize);
-    }
-  },
   async mounted() {
     if (process.client) {
       this.THREE = window.AFRAME.THREE;
       this.modelType = this.furnitureItem.modelType;
+
       this.activeTextures = this.furnitureItem.textureNames.reduce((acc, name) => {
         acc[name] = true;
         return acc;
       }, {});
       await this.initCustomEnvironment();
+      window.addEventListener('resize', this.updateRendererWhenResize);
+      this.updateRendererWhenResize();
     }
-    this.updateRendererWhenResize();
   },
-  beforeUnmount() {
+  beforeDestroy() {
     if (process.client) {
       window.removeEventListener('resize', this.updateRendererWhenResize);
     }
   },
   methods: {
 
+    findKeyByValue(obj, value) {
+      return Object.keys(obj).find(key => obj[key] === value);
+    },
+    rotateModelX(direction) {
+      if (!this.modelWrapper) return;
 
+      const rotationSpeed = 0.1; // Adjust this value to change the rotation speed
+      this.modelWrapper.rotation.x += rotationSpeed * direction;
+    },
+
+
+    modifyMTLToggleTexture(materials) {
+
+      // Replace texture file paths with Blob URLs in materials
+      for (const materialName in materials.materialsInfo) {
+        const materialInfo = materials.materialsInfo[materialName];
+        const textureMapProperties = ['map_kd', 'map_ks', 'map_ns', 'map_bump', 'refl'];
+
+        textureMapProperties.forEach((property) => {
+
+          const fileName = this.findKeyByValue(this.textureBlobUrls, materialInfo[property]);
+
+
+          if (materialInfo[property] && this.textureBlobUrls[fileName]) {
+            if (this.activeTextures[fileName]) {
+              materialInfo[property] = this.textureBlobUrls[fileName];
+            } else {
+              materialInfo[property] = "";
+            }
+          }
+        });
+      }
+    },
     async toggleTexture(textureName) {
       if (!this.modelWrapper) return;
       this.activeTextures[textureName] = !this.activeTextures[textureName];
@@ -142,58 +188,6 @@ export default {
       this.scene.add(this.modelWrapper);
     },
 
-    async getFurnitureFileUrl(id, fileName) {
-
-      const resourceUrl = `/api/furniture/${id}/${fileName}`;
-
-      // Open the cache
-      const cache = await caches.open('furniture-cache').catch((error) => {
-        console.error('Error opening the cache:', error);
-      });
-
-      if (cache) {
-        // Check if the resource is in the cache
-        const cacheMatch = await cache.match(resourceUrl).catch((error) => {
-          console.error('Error matching the cache:', error);
-        });
-
-        // If the resource is in the cache, return it
-        if (cacheMatch) {
-          const cachedBlob = await cacheMatch.blob();
-          // Create a blob URL for the cached resource
-          return URL.createObjectURL(cachedBlob);
-        }
-      }
-
-      // If the resource is not in the cache, fetch it
-      try {
-        const response = await this.$axios.get(resourceUrl, { responseType: 'blob' });
-        // Create a blob URL for the fetched resource
-        const blobUrl = URL.createObjectURL(response.data);
-
-        // Add the fetched resource to the cache if available
-        if (cache) {
-          // Create a new Response object with the same data as the original response
-          const cacheableResponse = new Response(response.data, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: response.headers,
-          });
-
-          // Add the Response object to the cache
-          // The resourceUrl is used as the cache key
-          await cache.put(resourceUrl, cacheableResponse).catch((error) => {
-            console.error('Error adding the resource to the cache:', error);
-          });
-        }
-
-        return blobUrl;
-      } catch (error) {
-        console.error('Error fetching furniture file:', error);
-        return '';
-      }
-    },
-
 
     loadMtl(mtlLoader, mtlUrl) {
       return new Promise((resolve, reject) => {
@@ -202,11 +196,11 @@ export default {
     },
 
     loadObj(objLoader, modelUrl) {
+      // The promise resolves with the loaded object
+      // The promise rejects with an error during loading
+      // The promise also reports progress updates during loading
+      // See the three.js OBJLoader documentation for more details
       return new Promise((resolve, reject) => {
-        // The promise resolves with the loaded object
-        // The promise rejects with an error during loading
-        // The promise also reports progress updates during loading
-        // See the three.js OBJLoader documentation for more details
         objLoader.load(modelUrl, resolve, undefined, reject);
       });
     },
@@ -216,32 +210,18 @@ export default {
       try {
         if (this.modelType === 'obj') {
           const objLoader = new OBJLoader();
-          const modelUrl = await this.getFurnitureFileUrl(this.furnitureItem.id, this.furnitureItem.modelName);
-          const mtlUrl = await this.getFurnitureFileUrl(this.furnitureItem.id, this.furnitureItem.materialName);
-          const mtlLoader = new MTLLoader();
-          const materials = await this.loadMtl(mtlLoader, mtlUrl);
 
+          if (this.mtlUrl !== '') { // Updated the condition to check for an empty string
+            const mtlLoader = new MTLLoader();
+            const materials = await this.loadMtl(mtlLoader, this.mtlUrl);
 
-          // Replace texture file paths with Blob URLs
-          for (const materialName in materials.materialsInfo) {
-            const materialInfo = materials.materialsInfo[materialName];
-            const textureMapProperties = ['map_kd', 'map_ks', 'map_ns', 'map_bump', 'refl'];
+            this.modifyMTLToggleTexture(materials);
 
-            textureMapProperties.forEach((property) => {
-              // If the texture is not present, set the property to an empty string
-              // If the texture is present, set the property to the Blob URL
-              if (materialInfo[property] && this.textureBlobUrls[materialInfo[property]]) {
-                if (this.activeTextures[materialInfo[property]]) {
-                  materialInfo[property] = this.textureBlobUrls[materialInfo[property]];
-                } else {
-                  materialInfo[property] = "";
-                }
-              }
-            });
+            materials.preload();
+            objLoader.setMaterials(materials);
           }
-          materials.preload();
-          objLoader.setMaterials(materials);
-          const obj = await this.loadObj(objLoader, modelUrl);
+
+          const obj = await this.loadObj(objLoader, this.modelUrl);
 
           // Save the model reference
           this.model = obj;
@@ -250,14 +230,17 @@ export default {
           this.modelWrapper.add(this.model);
         }
       } catch (error) {
-        console.error('Error loading furniture model:', error);
+        console.error('Error loading furniture model:', error.response.data);
       }
     },
 
 
     async loadBackgroundTexture(textureLoader) {
-      // Add a background with a blurred environment
-      textureLoader.load('/environment-background.jpg', (background) => {
+      const imageUrl = await getFurnitureFileAsBlobUrl(
+        this.$axios,
+        this.furnitureItem.id,
+        this.furnitureItem.imageName);
+      textureLoader.load(imageUrl ? imageUrl : '/environment-background.jpg', (background) => {
         this.scene.background = background;
       });
     },
@@ -389,11 +372,6 @@ export default {
         renderer.setSize(container.clientWidth, container.clientHeight);
       }
     },
-
-
-
-
-
   },
 };
 </script>

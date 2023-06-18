@@ -6,6 +6,6 @@ import FurnitureList from '@/components/FurnitureList.vue'
 export default {
   components: {
     FurnitureList,
-  },
+  }
 }
 </script>
