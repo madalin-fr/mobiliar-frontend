@@ -1,5 +1,9 @@
 <template>
   <v-container>
+    <v-snackbar v-model="errorMessage" :timeout="5000" :color="'error'">
+      {{ errorMessage }}
+      <v-btn text @click="errorMessage = null">Close</v-btn>
+    </v-snackbar>
     <v-row justify="center">
       <v-col cols="12" sm="8" md="6">
         <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
@@ -8,7 +12,6 @@
             <span class="headline">Register</span>
           </v-card-title>
           <v-card-text>
-            <v-alert v-if="errorMessage" type="error" dense>{{ errorMessage }}</v-alert>
             <RegisterCustomerForm ref="registerForm" @register="register" :loading="loading"
                                   :account-exists="accountExists"
                                   :show-success="showSuccess"
