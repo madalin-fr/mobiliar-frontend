@@ -48,9 +48,6 @@
         @update="phoneResults = $event"
       />
     </client-only>
-    <v-alert v-if="showPhoneError" type="error" dense>
-      Invalid phone number
-    </v-alert>
     <v-alert v-if="phoneUsed" type="error" dense>
       Phone number already used
     </v-alert>
@@ -61,7 +58,7 @@
       required
     ></v-checkbox>
     <v-card-actions>
-      <v-btn color="primary" @click="validateAndRegister">Register</v-btn>
+      <v-btn :disabled="!isFormValid" color="primary" @click="validateAndRegister">Register</v-btn>
     </v-card-actions>
     <v-alert v-if="showSuccess" type="success" dense>
       User registered successfully. Please check your e-mail to confirm your account.
@@ -91,6 +88,19 @@ export default {
       }),
     },
   },
+  computed: {
+    isFormValid() {
+      return     this.formData.name &&
+        this.formData.email &&
+        this.formData.password &&
+        this.formData.confirmPassword &&
+        this.formData.password === this.formData.confirmPassword &&
+        this.formData.address1 &&
+        this.phoneResults &&
+        this.phoneResults.isValid &&
+        this.formData.termsAccepted
+    }
+  },
   data() {
     return {
         formData: {
@@ -116,20 +126,11 @@ export default {
       termsRules: [(v) => !!v || 'You must agree to the terms and conditions'],
       address1Rules: [(v) => !!v || 'Address Line 1 is required'],
       phoneResults: null,
-      showPhoneError: false,
       emailUsed: false,
       phoneUsed: false,
     };
   },
   watch: {
-    phoneResults: {
-      deep: true, // allow nested properties watch
-      handler(newVal) {
-        if (newVal && newVal.isValid) {
-          this.showPhoneError = false; // remove error message if valid input
-        }
-      },
-    },
     'accountExists.email': {
       handler(newVal) {
         // When email account exists status changes, update the emailUsed value

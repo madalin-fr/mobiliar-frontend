@@ -8,6 +8,7 @@
             <span class="headline">Register</span>
           </v-card-title>
           <v-card-text>
+            <v-alert v-if="errorMessage" type="error" dense>{{ errorMessage }}</v-alert>
             <RegisterCustomerForm ref="registerForm" @register="register" :loading="loading"
                                   :account-exists="accountExists"
                                   :show-success="showSuccess"
@@ -31,6 +32,7 @@ export default {
       loading: false,
       showSuccess: false,
       phoneUsed: false,
+      errorMessage: null,
       accountExists: {
         email: false,
         phone: false,
@@ -56,6 +58,10 @@ export default {
           });
         }
         catch (error) {
+          if (error.response.status === 403) {
+            // Handle CORS-related issues
+            this.$refs.registerForm.setErrorMessage("There's an issue with CORS configuration on the server. Please contact the site administrator.");
+          }
           console.error('Error checking if account exists:', error.response.data);
           this.loading = false;
           return;
@@ -109,6 +115,9 @@ export default {
           this.$router.push('/');
         }, 3000);
     },
+  },
+  setErrorMessage(message) {
+    this.errorMessage = message;
   },
 };
 </script>
