@@ -57,7 +57,7 @@ export default {
   ],
 
   server: {
-    host: '0.0.0.0',
+    host: "localhost",
     port: process.env.PORT || 3000,
 
   },
@@ -79,8 +79,8 @@ export default {
 
   proxy: {
     '/api': {
-      // target: 'http://localhost:8080',
-      target: 'https://mobiliar-backend.up.railway.app/',
+      target: 'http://localhost:8080',
+      // target: 'https://mobiliar-backend.up.railway.app/',
       changeOrigin: true
     }
   },

@@ -101,6 +101,7 @@ export default {
             this.accountActivated = false;
           }
         } catch (error) {
+          console.error('Error authenticating:', error.response.data);
           if (error.response && error.response.status === 401) {
             // Handle invalid email or password
             this.alertMessage = 'Invalid email or password';
