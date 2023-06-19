@@ -78,8 +78,8 @@ export default {
 
   proxy: {
     '/api': {
-      target: 'http://localhost:8080',
-      // target: 'https://mobiliar-backend.up.railway.app/',
+      // target: 'http://localhost:8080',
+      target: 'https://mobiliar-backend.up.railway.app/',
       changeOrigin: true
     }
   },
