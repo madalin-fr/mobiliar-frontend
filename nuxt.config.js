@@ -56,6 +56,12 @@ export default {
     '@nuxtjs/vuetify'
   ],
 
+  server: {
+    host: '0.0.0.0',
+    port: process.env.PORT || 3000,
+
+  },
+
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     '@nuxtjs/axios',
@@ -73,9 +79,8 @@ export default {
 
   proxy: {
     '/api': {
-      // target: 'http://localhost:8080', // Change this to your Spring Boot server URL
-      target: 'https://mobiliar-backend.up.railway.app/', // Change this to your Spring Boot server URL
-      secure: false,
+      target: 'http://localhost:8080',
+      // target: 'https://mobiliar-backend.up.railway.app/',
       changeOrigin: true
     }
   },
