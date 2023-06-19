@@ -75,6 +75,7 @@ export default {
     '/api': {
       target: 'http://localhost:8080', // Change this to your Spring Boot server URL
       // target: 'https://mobiliar-backend.up.railway.app/', // Change this to your Spring Boot server URL
+      secure: false,
       changeOrigin: true
     }
   },
