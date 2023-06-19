@@ -77,6 +77,7 @@ export default {
   methods: {
     async login()
     {
+      console.log(window.location.origin);
       // Validate the form before proceeding
       if (this.$refs.loginForm.validate()) {
         try {
