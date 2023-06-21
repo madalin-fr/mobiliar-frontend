@@ -1,13 +1,16 @@
 <template>
-  <v-container>
-    <h1>Furniture List</h1>
+  <div class="furniture-list">
+    <h1 class="text-center">Furniture List</h1>
+    <v-spacer></v-spacer>
     <client-only>
-      <div>
-      <swiper class="swiper"
+      <swiper
+        style="margin-top:10vh; margin-bottom:10vh;"
+        class="swiper"
               :options="swiperOption"
               @slideChange="onSlideChange"
+
       >
-        <swiper-slide v-for="(furniture) in furnitureList" :key="furniture.id">
+        <swiper-slide v-for="(furniture) in furnitureList" :key="furniture.id" >
           <nuxt-link :to="`/furniture/${furniture.id}`">
             <v-card ref="cardBackground"
                     :class="['card-background', $vuetify.theme.dark ? 'dark' : 'light']"
@@ -16,7 +19,7 @@
               <div class="background-image" :style="{ backgroundImage: `url('${backgroundImageURL(furniture)}')` }"></div>
               <div class="overlay"></div>
               <v-card-title>{{ furniture.name }}</v-card-title>
-              <v-card-text>
+              <v-card-text class="mb-8">
                 Posted by {{ furniture.customerName }} on {{ formatDate(furniture.createdAt) }}
               </v-card-text>
             </v-card>
@@ -26,9 +29,8 @@
         <div class="swiper-pagination"  slot="pagination"></div>
         <div class="swiper-button-prev"  slot="button-prev"></div>
       </swiper>
-      </div>
     </client-only>
-  </v-container>
+  </div>
 </template>
 <script>
 import {getFurnitureFileAsBlobUrl} from "assets/furniture-utils";
@@ -40,16 +42,35 @@ export default {
       imageUrls: {},
       swiperOption: {
         grabCursor:true,
+        autoHeight:true,
         effect:'coverflow',
         centeredSlides: true,
         slidesPerView: 2,
-        spaceBetween: 200,
+        lazy:true,
+        spaceBetween: 10,
         coverflowEffect: {
-          rotate: 50,
+          rotate: 40,
           stretch: 0,
-          depth: 100,
+          depth: 20,
           modifier: 1,
           slideShadows: true,
+        },
+        breakpoints: {
+          1024: {
+            slidesPerView: 4,
+          },
+          1600: {
+            slidesPerView: 5,
+          },
+          1920: {
+            slidesPerView: 6,
+          },
+          2560: {
+            slidesPerView: 8,
+          },
+          4096: {
+            slidesPerView: 10,
+          },
         },
         navigation: {
           nextEl: '.swiper-button-next',
@@ -57,10 +78,7 @@ export default {
         },
         pagination: {
           el: '.swiper-pagination',
-          renderBullet(index, className) {
-            return `<span class="${className} swiper-pagination-bullet-custom">${index + 1}</span>`
-          },
-          clickable: true
+          type: 'fraction'
         },
 
       }
@@ -136,12 +154,20 @@ export default {
 };
 </script>
 <style scoped>
+
+
+
 .card-background {
   position: relative;
-  padding-top:56.25%;
-  width: auto;
   overflow:hidden;
+  height:60vh;
+  max-height:900px;
+  display: flex;
+  flex-direction: column;
+  justify-content:space-between;
+
 }
+
 
 .background-image {
   position: absolute;

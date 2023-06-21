@@ -124,5 +124,8 @@ export default {
       location.reload();
     }
   },
+  beforeDestroy() {
+    location.reload();
+  },
 };
 </script>

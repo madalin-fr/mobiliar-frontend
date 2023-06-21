@@ -137,7 +137,6 @@ export default {
     }
   },
   methods: {
-
     findKeyByValue(obj, value) {
       return Object.keys(obj).find(key => obj[key] === value);
     },
@@ -147,8 +146,6 @@ export default {
       const rotationSpeed = 0.1; // Adjust this value to change the rotation speed
       this.modelWrapper.rotation.x += rotationSpeed * direction;
     },
-
-
     modifyMTLToggleTexture(materials) {
 
       // Replace texture file paths with Blob URLs in materials
@@ -187,14 +184,11 @@ export default {
       // Add the new model wrapper to the scene
       this.scene.add(this.modelWrapper);
     },
-
-
     loadMtl(mtlLoader, mtlUrl) {
       return new Promise((resolve, reject) => {
         mtlLoader.load(mtlUrl, resolve, undefined, reject);
       });
     },
-
     loadObj(objLoader, modelUrl) {
       // The promise resolves with the loaded object
       // The promise rejects with an error during loading
@@ -204,8 +198,6 @@ export default {
         objLoader.load(modelUrl, resolve, undefined, reject);
       });
     },
-
-
     async loadModel(OBJLoader, MTLLoader) {
       try {
         if (this.modelType === 'obj') {
@@ -233,8 +225,6 @@ export default {
         console.error('Error loading furniture model:', error.response.data);
       }
     },
-
-
     async loadBackgroundTexture(textureLoader) {
       const imageUrl = await getFurnitureFileAsBlobUrl(
         this.$axios,
@@ -244,8 +234,6 @@ export default {
         this.scene.background = background;
       });
     },
-
-
     async initCustomEnvironment() {
 
       const THREE = this.THREE;
@@ -297,7 +285,6 @@ export default {
 
       animate();
     },
-
     centerModel(model) {
       const box = new this.THREE.Box3().setFromObject(model);
       const center = box.getCenter(new this.THREE.Vector3());
@@ -309,7 +296,6 @@ export default {
 
       return { center, size };
     },
-
     addLights(scene) {
       const ambientLight = new THREE.AmbientLight(0x404040, 1); // soft white light
       scene.add(ambientLight);
@@ -318,8 +304,6 @@ export default {
       directionalLight.position.set(1, 1, 1);
       scene.add(directionalLight);
     },
-
-
     updateCameraPosition(modelSize) {
       const container = document.getElementById('customEnvironment');
       const camera = this.scene.getObjectByName('camera');
@@ -341,7 +325,6 @@ export default {
       // Update camera position
       camera.position.z = distance;
     },
-
     togglePauseRotation() {
       this.paused = !this.paused
     },
