@@ -103,6 +103,9 @@ export default {
       }
     };
   },
+  async beforeCreate() {
+    await this.$store.dispatch('furniture/initBookmarkedFurnitureItems');
+  },
   methods: {
     navigateToFurnitureItem(id) {
       window.location.href = `/furniture/${id}`;
@@ -182,7 +185,6 @@ export default {
           const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
           return dateB - dateA;
         });
-        console.log(this.furnitureList);
         await this.loadImageUrls();
       } else {
         console.error('Error fetching furniture data: No data received');

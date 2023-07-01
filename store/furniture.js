@@ -3,53 +3,53 @@ export const state = () => ({
 });
 
 export const mutations = {
-  ADD_BOOKMARKED_FURNITURE(state, { userEmail, furnitureId }) {
-    // If the user has no bookmarked furniture items yet, create an empty object
-    if (!state.bookmarkedFurnitureItems[userEmail]) {
-      state.bookmarkedFurnitureItems = {
-        ...state.bookmarkedFurnitureItems,
-        [userEmail]: {},
-      };
-    }
-    // toggle bookmark state for the furniture item
-    if (state.bookmarkedFurnitureItems[userEmail][furnitureId]) {
-      this._vm.$delete(state.bookmarkedFurnitureItems[userEmail], furnitureId);
-    } else {
-      this._vm.$set(state.bookmarkedFurnitureItems[userEmail], furnitureId, true);
-    }
-    // Persist bookmarked furniture items in cookies
-    if (this.$cookies) {
-      const cookieName = `mobiliar.bookmarkedFurnitureItems.${userEmail}`;
-      this.$cookies.set(cookieName, state.bookmarkedFurnitureItems[userEmail], {
-        sameSite: 'none',
-        secure: true,
-      });
-    }
+  SET_BOOKMARKED_FURNITURE(state, { userEmail, furnitureItems }) {
+    state.bookmarkedFurnitureItems[userEmail] = furnitureItems;
   },
-  INIT_BOOKMARKED_FURNITURE(state, { userEmail, bookmarkedFurnitureItems }) {
-    this._vm.$set(state.bookmarkedFurnitureItems, userEmail, bookmarkedFurnitureItems);
+  TOGGLE_BOOKMARKED_FURNITURE(state, { userEmail, furnitureId }) {
+    const items = state.bookmarkedFurnitureItems[userEmail] || {};
+
+    if (items[furnitureId]) {
+      this._vm.$delete(items, furnitureId);
+    } else {
+      this._vm.$set(items, furnitureId, true);
+    }
+
+    state.bookmarkedFurnitureItems[userEmail] = items;
   },
 };
+
 export const actions = {
-  bookmarkFurnitureItem({ commit, rootState }, furnitureId) {
+  async nuxtServerInit({ commit }, { req }) {
+    // Initialize cookies using the server request
+    this.$cookies.init(req);
+  },
+  bookmarkFurnitureItem({ commit, state, rootState }, furnitureId) {
     const userEmail = rootState.auth.user.email;
-    commit("ADD_BOOKMARKED_FURNITURE", { userEmail, furnitureId });
+    commit("TOGGLE_BOOKMARKED_FURNITURE", { userEmail, furnitureId });
+
+    const cookieName = `mobiliar.bookmarkedFurnitureItems.${userEmail}`;
+    this.$cookies.set(cookieName, state.bookmarkedFurnitureItems[userEmail], {
+      sameSite: 'lax',
+      secure: true,
+      path: '/',
+    });
   },
   async initBookmarkedFurnitureItems({ commit, rootState }) {
-    if (this.$cookies && rootState.auth.user) {
+    if (rootState.auth.user) {
       const userEmail = rootState.auth.user.email;
       const cookieName = `mobiliar.bookmarkedFurnitureItems.${userEmail}`;
       const bookmarkedFurnitureItems = this.$cookies.get(cookieName) || {};
-      commit("INIT_BOOKMARKED_FURNITURE", { userEmail, bookmarkedFurnitureItems });
+      console.log(this.$cookies.get(cookieName));
+      commit("SET_BOOKMARKED_FURNITURE", { userEmail, furnitureItems: bookmarkedFurnitureItems });
     }
   },
 };
 
-
 export const getters = {
-  // pure function higher order function
   isFurnitureItemBookmarked: (state, getters, rootState) => (furnitureId) => {
     const userEmail = rootState.auth.user.email;
-    return state.bookmarkedFurnitureItems[userEmail] && (furnitureId in state.bookmarkedFurnitureItems[userEmail]);
+    const items = state.bookmarkedFurnitureItems[userEmail];
+    return items && items[furnitureId];
   },
 };

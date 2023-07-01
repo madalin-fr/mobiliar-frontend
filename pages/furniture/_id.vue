@@ -66,9 +66,7 @@ export default {
   },
   methods: {
     async handleFurnitureUpdate(updatedFurnitureItem) {
-      console.log("am i this");
       this.furnitureItem = updatedFurnitureItem;
-      console.log(this.furnitureItem.price);
     },
     async loadFurnitureFiles() {
       // Load the furniture model and textures

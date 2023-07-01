@@ -14,7 +14,7 @@
                   {{ 'Start AR' }}
                 </v-btn>
               </v-col>
-              <v-col cols="12" sm="6" class="d-flex" :class="{'justify-end': $vuetify.breakpoint.smAndUp}">
+              <v-col cols="12" sm="6" class="d-flex justify-end-on-sm">
                 <v-btn @click="bookmarkFurniture" :color="isBookmarked ? 'grey' : 'primary'" :disabled="loading" class="mb-2 ">
                   <v-icon left>{{ isBookmarked ? 'mdi-bookmark' : 'mdi-bookmark-outline' }}</v-icon>
                   {{ isBookmarked ? 'Remove Bookmark' : 'Add Bookmark' }}
@@ -26,7 +26,7 @@
                   {{ 'Delete Furniture'}}
                 </v-btn>
               </v-col>
-              <v-col cols="12" sm="6" v-if="isOwner" class="d-flex" :class="{'justify-end': $vuetify.breakpoint.smAndUp}">
+              <v-col cols="12" sm="6" v-if="isOwner" class="d-flex justify-end-on-sm">
                 <v-btn @click="openEditDialog" color="blue" :disabled="loading" class="">
                   <v-icon left>{{ 'mdi-pencil' }}</v-icon>
                   {{ 'Edit Details'}}
@@ -141,9 +141,7 @@ export default {
       localFurnitureItem: { ...this.furnitureItem },
     }
   },
-  async beforeCreate() {
-    await this.$store.dispatch('furniture/initBookmarkedFurnitureItems');
-  },
+
   props: {
     textureBlobUrls: {
       type: Object,
@@ -242,7 +240,6 @@ export default {
 
         console.log('Furniture item updated successfully:', response.data);
         this.localFurnitureItem = { ...this.editedFurnitureItem };
-        console.log(this.localFurnitureItem.price,this.editedFurnitureItem.price);
         this.$emit('update-furniture', this.localFurnitureItem);
       } catch (error) {
         console.error('Error updating furniture item:', error.response.data);
@@ -257,5 +254,9 @@ export default {
 };
 </script>
 <style scoped>
-
+@media (min-width: 601px) {
+  .justify-end-on-sm {
+    justify-content: flex-end;
+  }
+}
 </style>

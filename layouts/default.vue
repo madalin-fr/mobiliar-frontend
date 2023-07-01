@@ -86,7 +86,7 @@ export default {
       },
     },
   },
-  beforeCreate() {
+  async beforeCreate() {
     const storedDarkMode = this.$cookies.get('mobiliar.darkmode');
     if (storedDarkMode !== undefined) {
       this.$store.commit('darkMode/setDarkMode', storedDarkMode);
@@ -94,6 +94,7 @@ export default {
       this.$store.commit('darkMode/setDarkMode', true);
     }
     this.$vuetify.theme.dark = this.$store.getters["darkMode/getDarkMode"];
+    await this.$store.dispatch('furniture/initBookmarkedFurnitureItems');
   },
   async created() {
     if (this.loggedIn) {
