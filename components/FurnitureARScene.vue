@@ -19,7 +19,27 @@
         gesture-detector
         renderer="logarithmicDepthBuffer: true;"
       >
+        <!-- Hiro marker -->
+        <a-marker
+          preset="hiro"
+          raycaster="objects: .clickable"
+          emitevents="true"
+          cursor="fuse: false; rayOrigin: mouse;"
+        >
+          <a-entity
+            id="rotation-center-hiro"
+            position="0 0 -0.5"
+            :animation="rotationEnabled ? animationProperties : null"
+            model-center="target: #model-hiro; size: 1"
+          >
+            <a-entity
+              id="model-hiro"
+              ref="modelElementHiro"
+            ></a-entity>
+          </a-entity>
+        </a-marker>
 
+        <!-- Kanji marker -->
         <a-marker
           preset="kanji"
           raycaster="objects: .clickable"
@@ -27,16 +47,15 @@
           cursor="fuse: false; rayOrigin: mouse;"
         >
           <a-entity
-            id="rotation-center"
+            id="rotation-center-kanji"
             position="0 0 -0.5"
             :animation="rotationEnabled ? animationProperties : null"
-            model-center="target: #model; size: 1"
+            model-center="target: #model-kanji; size: 1"
           >
             <a-entity
-              id="model"
-              ref="modelElement"
-            >
-            </a-entity>
+              id="model-kanji"
+              ref="modelElementKanji"
+            ></a-entity>
           </a-entity>
         </a-marker>
         <a-entity camera></a-entity>
@@ -133,13 +152,15 @@ export default {
     },
     // Load the model with or without MTL file
     async loadModel() {
-      const model = this.$refs.modelElement;
-      console.log(this.modelUrl);
-      console.log(this.mtlUrl);
+      const modelHiro = this.$refs.modelElementHiro;
+      const modelKanji = this.$refs.modelElementKanji;
+
       if (await this.checkFileExists(this.mtlUrl) && this.mtlUrl !== '') {
-        model.setAttribute('obj-model', `obj: url(${this.modelUrl}); mtl: url(${this.mtlUrl})`);
+        modelHiro.setAttribute('obj-model', `obj: url(${this.modelUrl}); mtl: url(${this.mtlUrl})`);
+        modelKanji.setAttribute('obj-model', `obj: url(${this.modelUrl}); mtl: url(${this.mtlUrl})`);
       } else {
-        model.setAttribute('obj-model', `obj: url(${this.modelUrl})`);
+        modelHiro.setAttribute('obj-model', `obj: url(${this.modelUrl})`);
+        modelKanji.setAttribute('obj-model', `obj: url(${this.modelUrl})`);
       }
     },
   },
