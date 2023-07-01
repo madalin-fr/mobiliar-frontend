@@ -8,9 +8,11 @@
       :modelUrl="modelUrl"
       :loading=loading
       @start-ar="startAR"
+      @update-furniture="handleFurnitureUpdate"
       v-if="!$store.getters['vr-ar/getIsARactive']"
     />
     <FurnitureARScene
+      ref="arScene"
       :furnitureItem="furnitureItem"
       :modelUrl="modelUrl"
       :mtlUrl="mtlUrl"
@@ -19,13 +21,24 @@
     />
   </div>
 </template>
-
 <script>
 import FurnitureItemDetails from "~/components/FurnitureItemDetails.vue";
 import FurnitureARScene from "@/components/FurnitureARScene.vue";
-
 import {getFurnitureFileAsBlobUrl} from '~/assets/furniture-utils.js';
 
+async function fetchFurnitureItem(params, $axios) {
+  try {
+    const url = `/api/furniture/${params.id}`;
+    const response = await $axios.get(url);
+    if (response && response.data) {
+      return response.data;
+    } else {
+      console.error('Error fetching furniture data: No data received');
+    }
+  } catch (error) {
+    console.error('Error fetching furniture data:', error.response ? error.response.data : error.message);
+  }
+}
 export default {
   components: {
     FurnitureItemDetails,
@@ -40,29 +53,43 @@ export default {
       loading: true,
     };
   },
-  async asyncData({ $axios, params }) {
-    const furnitureItem = await $axios.$get(`/api/furniture/${params.id}`);
+
+  async asyncData({ params, $axios }) {
+    const furnitureItem = await fetchFurnitureItem(params, $axios);
     return { furnitureItem };
   },
-  async mounted() {
 
-    // Load the furniture model and textures
-    // The furniture model and textures are fetched from the server and cached
-    // blob URLs are created for the fetched resources
-    // The MTL file is modified to use the blob URLs instead of filenames for the textures
-    this.textureBlobUrls = await this.loadTextures(this.furnitureItem);
-    this.modelUrl = await getFurnitureFileAsBlobUrl(this.$axios, this.furnitureItem.id, this.furnitureItem.modelName);
-    if(this.furnitureItem.materialName) {
-      this.mtlUrl = await getFurnitureFileAsBlobUrl(this.$axios, this.furnitureItem.id, this.furnitureItem.materialName);
-      // Modify the MTL file to use the blob URLs instead of filenames for the textures
-      this.mtlUrl = await this.modifyMTL(this.mtlUrl, this.textureBlobUrls);
-    }
-    this.loading = false;
+
+
+  async mounted() {
+      await this.loadFurnitureFiles();
   },
   methods: {
-
+    async handleFurnitureUpdate(updatedFurnitureItem) {
+      console.log("am i this");
+      this.furnitureItem = updatedFurnitureItem;
+      console.log(this.furnitureItem.price);
+    },
+    async loadFurnitureFiles() {
+      // Load the furniture model and textures
+      // The furniture model and textures are fetched from the server and cached
+      // blob URLs are created for the fetched resources
+      // The MTL file is modified to use the blob URLs instead of filenames for the textures
+      this.textureBlobUrls = await this.loadTextures(this.furnitureItem);
+      this.modelUrl = await getFurnitureFileAsBlobUrl(this.$axios, this.furnitureItem.id, this.furnitureItem.modelName);
+      if(this.furnitureItem.materialName) {
+        this.mtlUrl = await getFurnitureFileAsBlobUrl(this.$axios, this.furnitureItem.id, this.furnitureItem.materialName);
+        // Modify the MTL file to use the blob URLs instead of filenames for the textures
+        this.mtlUrl = await this.modifyMTL(this.mtlUrl, this.textureBlobUrls);
+      }
+      this.loading = false;
+    },
     async loadTextures(furnitureItem) {
       const {textureNames, id: furnitureItemId} = furnitureItem;
+      if (!Array.isArray(textureNames)) {
+        console.error("Error: textureNames is not an array");
+        return {};
+      }
       const textureBlobUrls = {};
       for (const textureName of textureNames) {
         // Get the blob URL for the texture
@@ -87,24 +114,18 @@ export default {
         }
         return line;
       });
-
       return updatedLines.join('\n');
     },
-
     async modifyMTL(mtlUrl, textureBlobUrls) {
       try {
         // Fetch the MTL content
         const response = await fetch(mtlUrl);
-
         // Read the contents of the blob as text
         const mtlContent = await response.text();
-
         // Replace texture file paths with Blob URLs
         const modifiedMtlContent = this.replaceTexturePaths(mtlContent, textureBlobUrls);
-
         // Create a new Blob with the modified MTL content
         const modifiedMtlBlob = new Blob([modifiedMtlContent], { type: 'text/plain' });
-
         // Create a blob URL for the modified MTL content
         return URL.createObjectURL(modifiedMtlBlob);
       } catch (error) {
@@ -112,8 +133,6 @@ export default {
         return '';
       }
     },
-
-
     startAR() {
       this.$store.commit('vr-ar/startAR');
     },
@@ -132,10 +151,8 @@ export default {
       }
     },
   },
-
 };
 </script>
-
 <style scoped>
 .container {
   display: flex;

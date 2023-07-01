@@ -109,7 +109,7 @@ export default {
             this.alertColor = 'error';
           } else {
             // Handle other errors
-            this.alertMessage = 'Login failed';
+            this.alertMessage = "Login failed: " + error.response.data;
             this.alertColor = 'error';
           }
           this.alertVisible = true;

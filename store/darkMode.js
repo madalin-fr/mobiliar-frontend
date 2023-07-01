@@ -1,4 +1,5 @@
 export const state = () => ({
+  // cookie-universal module injects the $cookies object into the store
   darkMode: true,
 });
 
