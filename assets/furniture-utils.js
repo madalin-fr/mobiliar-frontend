@@ -3,9 +3,13 @@ export async function getFurnitureFileAsBlobUrl(axiosInstance, id, fileName) {
   if(id === null || fileName === null) return;
   const resourceUrl = `/api/furniture/${id}/${fileName}`;
   // Open the cache
-  const cache = await caches.open('furniture-cache').catch((error) => {
-    console.error('Error opening the cache:', error);
-  });
+  const cache = null;
+  // Check if the browser supports the cache API
+  if ('caches' in self) {
+    const cache = await caches.open('furniture-cache').catch((error) => {
+      console.error('Error opening the cache:', error);
+    });
+  }
   if (cache) {
     // Check if the resource is in the cache
     const cacheMatch = await cache.match(resourceUrl).catch((error) => {

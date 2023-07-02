@@ -208,29 +208,25 @@ video {
   font-size: 1.25em;
   color: white;
 }
-
 .buttons {
   position: absolute;
   top: 1em;
+  left: 0;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   z-index: 10;
   width: 100%;
   padding: 0 1em;
+  flex-direction: column;
 }
 
-.go-back-button {
-  padding: 0.25em;
-  border-radius: 4px;
-  border: none;
-  background: white;
-  color: black;
-  min-width: 58px;
-  min-height: 24px;
-  margin-right: auto;
+@media (min-width: 345px) {
+  .buttons {
+    flex-direction: row;
+  }
 }
 
+.go-back-button,
 .toggle-rotation-button {
   padding: 0.25em;
   border-radius: 4px;
@@ -239,5 +235,10 @@ video {
   color: black;
   min-width: 58px;
   min-height: 24px;
+  margin-bottom: 0.5em;
+  font-size: 0.8em;
 }
+
+
+
 </style>

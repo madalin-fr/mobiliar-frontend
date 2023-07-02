@@ -40,7 +40,6 @@ export const actions = {
       const userEmail = rootState.auth.user.email;
       const cookieName = `mobiliar.bookmarkedFurnitureItems.${userEmail}`;
       const bookmarkedFurnitureItems = this.$cookies.get(cookieName) || {};
-      console.log(this.$cookies.get(cookieName));
       commit("SET_BOOKMARKED_FURNITURE", { userEmail, furnitureItems: bookmarkedFurnitureItems });
     }
   },
