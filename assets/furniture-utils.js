@@ -3,10 +3,9 @@ export async function getFurnitureFileAsBlobUrl(axiosInstance, id, fileName) {
   if(id === null || fileName === null) return;
   const resourceUrl = `/api/furniture/${id}/${fileName}`;
   // Open the cache
-  const cache = null;
-  // Check if the browser supports the cache API
+  let cache = null;
   if ('caches' in self) {
-    const cache = await caches.open('furniture-cache').catch((error) => {
+    cache = await caches.open('furniture-cache').catch((error) => {
       console.error('Error opening the cache:', error);
     });
   }

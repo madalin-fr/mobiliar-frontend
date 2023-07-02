@@ -31,10 +31,12 @@
             position="0 0 -0.5"
             :animation="rotationEnabled ? animationProperties : null"
             model-center="target: #model-hiro; size: 1"
+            gesture-handler
           >
             <a-entity
               id="model-hiro"
               ref="modelElementHiro"
+              gesture-handler
             ></a-entity>
           </a-entity>
         </a-marker>
@@ -51,10 +53,12 @@
             position="0 0 -0.5"
             :animation="rotationEnabled ? animationProperties : null"
             model-center="target: #model-kanji; size: 1"
+            gesture-handler
           >
             <a-entity
               id="model-kanji"
               ref="modelElementKanji"
+              gesture-handler
             ></a-entity>
           </a-entity>
         </a-marker>
